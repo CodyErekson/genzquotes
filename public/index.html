@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gen Z Quotes Translator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Gen Z Quotes Translator</h1>
+            <p>Transform classic quotes into Gen Z brain-rot dialect</p>
+        </header>
+
+        <main>
+            <div class="quote-selector">
+                <label for="quoteType">Choose a quote type:</label>
+                <select id="quoteType">
+                    <option value="">Select a type...</option>
+                    <option value="zen">Zen</option>
+                    <option value="bible">Bible Scripture</option>
+                    <option value="lds">LDS Quote</option>
+                    <option value="geek">Geek</option>
+                    <option value="software">Software</option>
+                </select>
+                <button id="translateBtn" disabled>Translate to Gen Z</button>
+            </div>
+
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Translating to Gen Z brain-rot dialect...</p>
+            </div>
+
+            <div class="quote-display" id="quoteDisplay" style="display: none;">
+                <div class="quote-section">
+                    <h3>Original Quote</h3>
+                    <blockquote id="originalQuote"></blockquote>
+                </div>
+                <div class="quote-section">
+                    <h3>Gen Z Translation</h3>
+                    <blockquote id="translatedQuote"></blockquote>
+                </div>
+            </div>
+
+            <div class="error" id="error" style="display: none;">
+                <p id="errorMessage"></p>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by ChatGPT & Web Scraping</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

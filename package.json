@@ -1,19 +1,23 @@
 {
   "name": "genzquotes",
   "version": "1.0.0",
-  "description": "Understand the deep knowledge of yesteryear.",
-  "main": "index.js",
+  "description": "A web application that translates quotes to Gen Z dialect",
+  "main": "server/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server/app.js",
+    "dev": "nodemon server/app.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodyErekson/genzquotes.git"
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
   },
-  "author": "Cody Erekson <cody.erekson@gmail.com>",
-  "license": "GPL-3.0-or-later",
-  "bugs": {
-    "url": "https://github.com/CodyErekson/genzquotes/issues"
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   },
-  "homepage": "https://github.com/CodyErekson/genzquotes#readme"
+  "keywords": ["quotes", "genz", "translator"],
+  "author": "",
+  "license": "MIT"
 }
