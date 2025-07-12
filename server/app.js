@@ -55,6 +55,10 @@ let ldsQuotesCache = [];
 let lastScrapeTime = 0;
 const CACHE_DURATION = 1000 * 60 * 60 * 24; // 24 hours
 
+// Cache for Software quotes to avoid repeated scraping
+let softwareQuotesCache = [];
+let lastSoftwareScrapeTime = 0;
+
 async function scrapeLDSQuote() {
     const now = Date.now();
     // Use cache if it's not empty and not expired
@@ -97,8 +101,8 @@ async function scrapeLDSQuote() {
                     .replace(/^“|”$/g, '') // remove surrounding quotes
                     .trim();
 
-                // Exclude quotes longer than 200 words
-                if (quote.split(/\s+/).length <= 200 && quote.length > 0) {
+                // Exclude quotes longer than 100 words
+                if (quote.split(/\s+/).length <= 100 && quote.length > 0) {
                     allQuotes.push(`${quote} - ${authorText}`);
                 }
             });
@@ -142,13 +146,70 @@ async function scrapeGeekQuote() {
 }
 
 async function scrapeSoftwareQuote() {
+    const now = Date.now();
+    // Use cache if it's not empty and not expired
+    if (softwareQuotesCache.length > 0 && (now - lastSoftwareScrapeTime < CACHE_DURATION)) {
+        return softwareQuotesCache[Math.floor(Math.random() * softwareQuotesCache.length)];
+    }
+
     try {
-        const response = await axios.get('https://softwarequotes.com/quote-of-the-day');
-        const $ = cheerio.load(response.data);
-        const quote = $('.quote-text').first().text().trim();
-        return quote || "Software is a great combination between artistry and engineering.";
+        console.log('Scraping Goodreads for Software quotes...');
+        const allQuotes = [];
+        let page = 1;
+        const maxPages = 10; // Scrape up to 10 pages for a good variety
+
+        while (page <= maxPages) {
+            const { data } = await axios.get(`https://www.goodreads.com/quotes/tag/programming?page=${page}`, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            });
+            const $ = cheerio.load(data);
+            const quoteElements = $('.quoteDetails');
+
+            if (quoteElements.length === 0) {
+                break; // No more pages
+            }
+
+            quoteElements.each((_, el) => {
+                const quoteTextElement = $(el).find('.quoteText');
+                const authorElement = quoteTextElement.find('span.authorOrTitle');
+                const authorText = authorElement.text().trim();
+
+                const quote = quoteTextElement
+                    .clone()
+                    .find('span.authorOrTitle, a.leftAlignedImage, br')
+                    .remove()
+                    .end()
+                    .text()
+                    .trim()
+                    .replace(/^“|”$/g, '')
+                    .trim();
+
+                if (quote.split(/\s+/).length <= 200 && quote.length > 0) {
+                    allQuotes.push(`${quote} - ${authorText}`);
+                }
+            });
+
+            page++;
+            // Add a small delay to be respectful to the server
+            await new Promise(resolve => setTimeout(resolve, 250));
+        }
+
+        if (allQuotes.length > 0) {
+            console.log(`Successfully scraped and cached ${allQuotes.length} Software quotes.`);
+            softwareQuotesCache = allQuotes;
+            lastSoftwareScrapeTime = now;
+            return softwareQuotesCache[Math.floor(Math.random() * softwareQuotesCache.length)];
+        }
+
+        // Fallback if no quotes are found
+        return "Software is a great combination between artistry and engineering.";
     } catch (error) {
-        console.error('Error scraping software quote:', error);
+        console.error('Error scraping Software quotes from Goodreads:', error);
+        if (softwareQuotesCache.length > 0) {
+            return softwareQuotesCache[Math.floor(Math.random() * softwareQuotesCache.length)];
+        }
         return "Software is a great combination between artistry and engineering.";
     }
 }
