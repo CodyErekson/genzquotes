@@ -5,17 +5,18 @@ A web application that transforms classic quotes into Gen Z brain-rot dialect us
 ## Features
 
 - **Multiple Quote Types**: Choose from Zen, Bible Scripture, LDS Quote, Geek, and Software quotes
-- **Web Scraping**: Fetches quotes from various online sources
-- **AI Translation**: Uses OpenAI's ChatGPT to translate quotes into Gen Z dialect
+- **API and Web Scraping**: Fetches quotes from various online sources and APIs
+- **AI Translation**: Uses OpenAI's `gpt-3.5-turbo` to translate quotes into Gen Z dialect
 - **Modern UI**: Clean, responsive design that works on desktop and mobile
 - **Real-time Processing**: Live translation with loading indicators
+- **Caching**: Caches scraped quotes to reduce load times and repeated requests
 
 ## Tech Stack
 
 - **Frontend**: HTML, CSS, JavaScript (Vanilla)
-- **Backend**: Node.js, Express.js
-- **Web Scraping**: Axios, Cheerio
-- **AI Integration**: OpenAI API (ChatGPT)
+- **Backend**: Node.js, Express.js, `cors`
+- **Web Scraping/API**: Axios, Cheerio
+- **AI Integration**: OpenAI API (`gpt-3.5-turbo`)
 - **Deployment**: EC2, nginx
 
 ## Installation
@@ -72,11 +73,16 @@ Fetches and translates a quote based on the specified type.
 
 ## Quote Sources
 
-- **Zen**: Scraped from zenquotes.io
-- **Bible Scripture**: Scraped from verseoftheday.com
-- **LDS Quote**: Scraped from ldssotd.com
+- **Zen**: Fetched from the `zenquotes.io` API
+- **Bible Scripture**: Fetched from `bible-api.com`
+- **LDS Quote**: Scraped from `goodreads.com`'s LDS quotes tag
 - **Geek**: Curated list of popular tech quotes
-- **Software**: Scraped from softwarequotes.com
+- **Software**: Scraped from `goodreads.com`'s programming quotes tag
+
+## Implementation Details
+
+- **Caching**: To avoid excessive scraping, quotes for the `lds` and `software` categories are cached for 24 hours after being fetched from Goodreads.
+- **Fallbacks**: In case of an error while fetching a quote from an external source, a default fallback quote for the selected category is returned to ensure application stability.
 
 ## Deployment
 
@@ -155,14 +161,14 @@ Fetches and translates a quote based on the specified type.
 ```
 genzquotes/
 ├── server/
-│   └── app.js          # Express server and API endpoints
+│   └── app.js        # Express server and API endpoints
 ├── public/
-│   ├── index.html      # Main HTML page
-│   ├── styles.css      # CSS styles
-│   └── script.js       # Frontend JavaScript
-├── package.json        # Node.js dependencies
-├── env.example         # Environment variables template
-└── README.md          # This file
+│   ├── index.html    # Main HTML page
+│   ├── styles.css    # CSS styles
+│   └── script.js     # Frontend JavaScript
+├── package.json      # Node.js dependencies
+├── .env.example    # Environment variables template
+└── README.md         # This file
 ```
 
 ### Available Scripts

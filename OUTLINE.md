@@ -48,6 +48,12 @@ graph TD
   - Listen for selection and button click
   - Make AJAX (fetch) request to backend API with selected quote type
   - Display the translated quote in the UI
+- **Quote Types**:
+  - Zen
+  - Bible Scripture
+  - LDS Quote
+  - Geek
+  - Software
 
 ### 3. Backend Implementation (Node.js)
 - Use Express.js for REST API
@@ -58,7 +64,13 @@ graph TD
     - Sends the quote to ChatGPT API with a prompt to “translate” it
     - Returns the translated quote as JSON
 - **External Quote Source:**
-  - Use a public quote API or simple web scraping (to be defined)
+  - Some will scraped from pages that show a random quote on load or each day, and some from listicles that should have one randomly chosen.
+  - Types and sources:
+    - Zen, https://zenquotes.io/ scraped
+    - Bible Scripture, https://www.verseoftheday.com/ scraped
+    - LDS Quote, https://ldssotd.com/ scraped
+    - Geek, https://www.wired.com/2010/01/100-quotes-every-geek-should-know/ listicle
+    - Software, https://softwarequotes.com/quote-of-the-day scraped
 - **ChatGPT Integration:**
   - Use OpenAI’s API (requires API key)
   - Format prompt: “Translate this quote to Gen Z brain-rot dialect: [QUOTE]”
