@@ -186,7 +186,7 @@ async function scrapeSoftwareQuote() {
                     .replace(/^“|”$/g, '')
                     .trim();
 
-                if (quote.split(/\s+/).length <= 200 && quote.length > 0) {
+                if (quote.split(/\s+/).length <= 100 && quote.length > 0) {
                     allQuotes.push(`${quote} - ${authorText}`);
                 }
             });
