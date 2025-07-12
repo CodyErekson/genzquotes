@@ -33,21 +33,19 @@ async function scrapeZenQuote() {
 
 async function scrapeBibleVerse() {
     try {
-        const response = await axios.get('https://dailyverses.net/random-bible-verse');
-        const $ = cheerio.load(response.data);
-
-        // NOTE: These selectors are based on an educated guess of the site's structure.
-        const verseText = $('.verse').first().text().trim();
-        const verseRef = $('.ref').first().text().trim();
-        
-        if (verseText && verseRef) {
-            return `${verseText} (${verseRef})`;
+        // Use the Bible API for a random verse, which is more reliable than scraping.
+        const response = await axios.get('https://bible-api.com/data/web/random');
+        if (response.data && response.data.random_verse) {
+            const { text, book, chapter, verse } = response.data.random_verse;
+            // The API includes a newline character, so we remove it.
+            const cleanText = text.replace(/\n/g, ' ').trim();
+            return `${cleanText} (${book} ${chapter}:${verse})`;
         }
-        
-        // Fallback if scraping fails
+        // Fallback if the API response is not in the expected format.
         return "For God so loved the world, that he gave his only begotten Son.";
     } catch (error) {
-        console.error('Error scraping Bible verse:', error);
+        console.error('Error fetching Bible verse from API:', error);
+        // If the API fails, return a default quote.
         return "For God so loved the world, that he gave his only begotten Son.";
     }
 }
