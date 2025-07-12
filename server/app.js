@@ -16,12 +16,17 @@ app.use(express.static(path.join(__dirname, '../public')));
 // Quote scraping functions
 async function scrapeZenQuote() {
     try {
-        const response = await axios.get('https://zenquotes.io/');
-        const $ = cheerio.load(response.data);
-        const quote = $('.quote').first().text().trim();
-        return quote || "The journey of a thousand miles begins with one step.";
+        // The site provides a REST API for random quotes, which is more reliable than scraping.
+        const response = await axios.get('https://zenquotes.io/api/random');
+        if (response.data && response.data.length > 0) {
+            const quoteData = response.data[0];
+            return `${quoteData.q} - ${quoteData.a}`;
+        }
+        // Fallback if the API response is not in the expected format.
+        return "The journey of a thousand miles begins with one step.";
     } catch (error) {
-        console.error('Error scraping Zen quote:', error);
+        console.error('Error fetching Zen quote from API:', error);
+        // If the API fails, return a default quote.
         return "The journey of a thousand miles begins with one step.";
     }
 }
