@@ -50,14 +50,77 @@ async function scrapeBibleVerse() {
     }
 }
 
+// Cache for LDS quotes to avoid repeated scraping
+let ldsQuotesCache = [];
+let lastScrapeTime = 0;
+const CACHE_DURATION = 1000 * 60 * 60 * 24; // 24 hours
+
 async function scrapeLDSQuote() {
+    const now = Date.now();
+    // Use cache if it's not empty and not expired
+    if (ldsQuotesCache.length > 0 && (now - lastScrapeTime < CACHE_DURATION)) {
+        return ldsQuotesCache[Math.floor(Math.random() * ldsQuotesCache.length)];
+    }
+
     try {
-        const response = await axios.get('https://ldssotd.com/');
-        const $ = cheerio.load(response.data);
-        const quote = $('.quote-text').first().text().trim();
-        return quote || "Faith is not by chance, but by choice.";
+        console.log('Scraping Goodreads for LDS quotes...');
+        const allQuotes = [];
+        let page = 1;
+        const maxPages = 6; // Limit to avoid excessive scraping, based on the site's pagination
+
+        while (page <= maxPages) {
+            const { data } = await axios.get(`https://www.goodreads.com/quotes/tag/lds?page=${page}`, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            });
+            const $ = cheerio.load(data);
+            const quoteElements = $('.quoteDetails');
+
+            if (quoteElements.length === 0) {
+                break; // No more quotes found, stop pagination
+            }
+
+            quoteElements.each((_, el) => {
+                const quoteTextElement = $(el).find('.quoteText');
+                const authorElement = quoteTextElement.find('span.authorOrTitle');
+                const authorText = authorElement.text().trim();
+
+                // Clone the element, remove the author part, and get the remaining text.
+                const quote = quoteTextElement
+                    .clone()
+                    .find('span.authorOrTitle, a.leftAlignedImage, br') // remove author, images, and line breaks
+                    .remove()
+                    .end()
+                    .text()
+                    .trim()
+                    .replace(/^“|”$/g, '') // remove surrounding quotes
+                    .trim();
+
+                // Exclude quotes longer than 200 words
+                if (quote.split(/\s+/).length <= 200 && quote.length > 0) {
+                    allQuotes.push(`${quote} - ${authorText}`);
+                }
+            });
+
+            page++;
+        }
+
+        if (allQuotes.length > 0) {
+            console.log(`Successfully scraped and cached ${allQuotes.length} LDS quotes.`);
+            ldsQuotesCache = allQuotes;
+            lastScrapeTime = now;
+            return ldsQuotesCache[Math.floor(Math.random() * ldsQuotesCache.length)];
+        }
+
+        // Fallback if no quotes are found
+        return "Faith is not by chance, but by choice.";
     } catch (error) {
-        console.error('Error scraping LDS quote:', error);
+        console.error('Error scraping LDS quotes from Goodreads:', error);
+        // If scraping fails but we have a cache, use it. Otherwise, use fallback.
+        if (ldsQuotesCache.length > 0) {
+            return ldsQuotesCache[Math.floor(Math.random() * ldsQuotesCache.length)];
+        }
         return "Faith is not by chance, but by choice.";
     }
 }
