@@ -59,6 +59,10 @@ const CACHE_DURATION = 1000 * 60 * 60 * 24; // 24 hours
 let softwareQuotesCache = [];
 let lastSoftwareScrapeTime = 0;
 
+// Cache for Philosophy quotes to avoid repeated scraping
+let philosophyQuotesCache = [];
+let lastPhilosophyScrapeTime = 0;
+
 async function scrapeLDSQuote() {
     const now = Date.now();
     // Use cache if it's not empty and not expired
@@ -214,6 +218,57 @@ async function scrapeSoftwareQuote() {
     }
 }
 
+async function scrapePhilosophyQuote() {
+    const now = Date.now();
+    // Use cache if it's not empty and not expired
+    if (philosophyQuotesCache.length > 0 && (now - lastPhilosophyScrapeTime < CACHE_DURATION)) {
+        return philosophyQuotesCache[Math.floor(Math.random() * philosophyQuotesCache.length)];
+    }
+
+    try {
+        console.log('Scraping HighExistence for Philosophy quotes...');
+        const allQuotes = [];
+        const { data } = await axios.get('https://www.highexistence.com/150-profound-philosophical-quotes-about-life-death-everything-in-between/', {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
+        const $ = cheerio.load(data);
+
+        // Quotes are in <h4> tags.
+        $('h4').each((_, el) => {
+            const fullText = $(el).text().trim();
+            
+            // The author is usually separated by a long dash '―'.
+            const parts = fullText.split('―');
+            if (parts.length >= 2) {
+                let quote = parts[0].trim().replace(/^“|”$/g, '').trim();
+                let author = parts.slice(1).join('―').trim();
+
+                if (quote.length > 0 && author.length > 0 && quote.split(/\s+/).length <= 100) {
+                    allQuotes.push(`${quote} - ${author}`);
+                }
+            }
+        });
+
+        if (allQuotes.length > 0) {
+            console.log(`Successfully scraped and cached ${allQuotes.length} Philosophy quotes.`);
+            philosophyQuotesCache = allQuotes;
+            lastPhilosophyScrapeTime = now;
+            return philosophyQuotesCache[Math.floor(Math.random() * philosophyQuotesCache.length)];
+        }
+
+        return "The only true wisdom is in knowing you know nothing. - Socrates";
+    } catch (error) {
+        console.error('Error scraping Philosophy quotes from HighExistence:', error);
+        if (philosophyQuotesCache.length > 0) {
+            return philosophyQuotesCache[Math.floor(Math.random() * philosophyQuotesCache.length)];
+        }
+        return "The only true wisdom is in knowing you know nothing. - Socrates";
+    }
+}
+
+
 // ChatGPT translation function
 async function translateToGenZ(quote) {
     try {
@@ -267,6 +322,9 @@ app.get('/api/quote', async (req, res) => {
                 break;
             case 'software':
                 quote = await scrapeSoftwareQuote();
+                break;
+            case 'philosophy':
+                quote = await scrapePhilosophyQuote();
                 break;
             default:
                 return res.status(400).json({ error: 'Invalid quote type' });
