@@ -33,10 +33,19 @@ async function scrapeZenQuote() {
 
 async function scrapeBibleVerse() {
     try {
-        const response = await axios.get('https://www.verseoftheday.com/');
+        const response = await axios.get('https://dailyverses.net/random-bible-verse');
         const $ = cheerio.load(response.data);
-        const verse = $('.bilingual-left').text().trim();
-        return verse || "For God so loved the world, that he gave his only begotten Son.";
+
+        // NOTE: These selectors are based on an educated guess of the site's structure.
+        const verseText = $('.verse').first().text().trim();
+        const verseRef = $('.ref').first().text().trim();
+        
+        if (verseText && verseRef) {
+            return `${verseText} (${verseRef})`;
+        }
+        
+        // Fallback if scraping fails
+        return "For God so loved the world, that he gave his only begotten Son.";
     } catch (error) {
         console.error('Error scraping Bible verse:', error);
         return "For God so loved the world, that he gave his only begotten Son.";
