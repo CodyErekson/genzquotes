@@ -270,18 +270,27 @@ async function scrapePhilosophyQuote() {
 
 
 // ChatGPT translation function
-async function translateToGenZ(quote) {
+async function translateQuote(quote, dialect = 'gen_z') {
+    const dialectPrompts = {
+        'gen_z': 'You are a translator that converts quotes into Gen Z brain-rot dialect. Use modern slang, emojis, and Gen Z expressions while maintaining the core meaning of the quote.',
+        'pirate': 'You are a translator that converts quotes into Pirate speak. Use classic pirate slang and expressions while maintaining the core meaning of the quote.',
+        'leet_speak': 'You are a translator that converts quotes into 2000s L33t Speak. Use numbers and symbols to replace letters and use classic l33t speak while maintaining the core meaning of the quote.',
+        'medieval': 'You are a translator that converts quotes into Ye Olde Medieval English. Use archaic words and sentence structures to make it sound like it\'s from the Middle Ages, while maintaining the core meaning of the quote.'
+    };
+
+    const systemPrompt = dialectPrompts[dialect] || dialectPrompts['gen_z'];
+
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: 'gpt-3.5-turbo',
             messages: [
                 {
                     role: 'system',
-                    content: 'You are a translator that converts quotes into Gen Z brain-rot dialect. Use modern slang, emojis, and Gen Z expressions while maintaining the core meaning of the quote.'
+                    content: systemPrompt
                 },
                 {
                     role: 'user',
-                    content: `Translate this quote to Gen Z brain-rot dialect: "${quote}"`
+                    content: `Translate this quote: "${quote}"`
                 }
             ],
             max_tokens: 150,
@@ -303,7 +312,7 @@ async function translateToGenZ(quote) {
 // API endpoint
 app.get('/api/quote', async (req, res) => {
     try {
-        const { type } = req.query;
+        const { type, dialect } = req.query;
         let quote = '';
 
         // Get quote based on type
@@ -331,7 +340,7 @@ app.get('/api/quote', async (req, res) => {
         }
 
         // Translate to Gen Z dialect
-        const translatedQuote = await translateToGenZ(quote);
+        const translatedQuote = await translateQuote(quote, dialect);
 
         res.json({
             original: quote,

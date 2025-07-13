@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const quoteTypeSelect = document.getElementById('quoteType');
+    const dialectTypeSelect = document.getElementById('dialectType');
     const translateBtn = document.getElementById('translateBtn');
     const loading = document.getElementById('loading');
     const quoteDisplay = document.getElementById('quoteDisplay');
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle translate button click
     translateBtn.addEventListener('click', async function() {
         const selectedType = quoteTypeSelect.value;
+        const selectedDialect = dialectTypeSelect.value;
         
         if (!selectedType) {
             showError('Please select a quote type');
@@ -28,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         hideQuoteDisplay();
 
         try {
-            const response = await fetch(`/api/quote?type=${selectedType}`);
+            const response = await fetch(`/api/quote?type=${selectedType}&dialect=${selectedDialect}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
